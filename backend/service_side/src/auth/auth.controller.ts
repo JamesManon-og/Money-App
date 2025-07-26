@@ -15,7 +15,7 @@ import {
 import { AuthService } from './auth.service';
 import { AuthGuard } from './guards/jwt-auth.guard';
 import { Public } from './decorators/public.decorator';
-import { UserLoginDto } from './dto/user-login.dto';
+import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
 @Controller('auth')
@@ -26,7 +26,7 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @Post('login')
   @UsePipes(new ValidationPipe({ whitelist: true }))
-  async signIn(@Body() loginDto: UserLoginDto, @Res() res) {
+  async signIn(@Body() loginDto: LoginDto, @Res() res) {
     const { access_token } = await this.authService.loginUser(loginDto);
 
     if (!access_token) {
