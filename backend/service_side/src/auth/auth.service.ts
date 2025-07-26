@@ -1,62 +1,51 @@
 import {
+  HttpException,
+  HttpStatus,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
-  InternalServerErrorException,
 } from '@nestjs/common';
+import { PrismaService } from 'src/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
-import { UserService } from '../user/user.service';
-import { LoginDto } from './dto/login.dto';
+import * as bcrypt from 'bcrypt';
+import { UserLoginDto } from './dto/user-login.dto';
 import { RegisterDto } from './dto/register.dto';
-import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly userService: UserService,
+    private readonly prismaService: PrismaService,
     private readonly jwtService: JwtService,
   ) {}
 
-  async validateUser(email: string, password: string) {
+  async loginUser(userLoginDto: UserLoginDto) {
+    const { password, email } = userLoginDto;
+    let user;
+
     try {
-      const user = await this.userService.findByEmail(email);
-      if (user && (await bcrypt.compare(password, user.password))) {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password: _, ...result } = user;
-        return result;
-      }
-      return null;
-    } catch (error) {
-      throw new InternalServerErrorException('User validation failed', {
-        cause: error,
-        description: 'An unexpected error occurred during validation',
+      user = await this.prismaService.user.findUnique({
+        where: {
+          email,
+        },
       });
-    }
-  }
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
 
-  async login(loginDto: LoginDto) {
-    const user = await this.validateUser(loginDto.email, loginDto.password);
-    if (!user) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
+      const isPasswordValid = await bcrypt.compare(password, user.password);
+      if (!isPasswordValid) {
+        throw new UnauthorizedException('Invalid credentials');
+      }
 
-    const payload = { email: user.email, sub: user.id, name: user.name };
-    return {
-      access_token: this.jwtService.sign(payload),
-      user: {
-        id: user.id,
+      const payload = {
+        email,
+        sub: user.id,
         name: user.name,
-        email: user.email,
-      },
-    };
-  }
-
-  async register(registerDto: RegisterDto) {
-    try {
-      const user = await this.userService.create(registerDto);
-      const payload = { email: user.email, sub: user.id, name: user.name };
+      };
+      const token = this.jwtService.sign(payload);
 
       return {
-        access_token: this.jwtService.sign(payload),
+        access_token: token,
         user: {
           id: user.id,
           name: user.name,
@@ -64,7 +53,66 @@ export class AuthService {
         },
       };
     } catch (error) {
-      throw error; // Re-throw the error from UserService (already properly formatted)
+      if (
+        error instanceof UnauthorizedException ||
+        error instanceof NotFoundException
+      ) {
+        throw error;
+      }
+      console.error('Unexpected Error during login:', error);
+      throw new HttpException(
+        'Internal server error during login',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  async register(registerDto: RegisterDto) {
+    try {
+      // Check if user already exists
+      const existingUser = await this.prismaService.user.findUnique({
+        where: { email: registerDto.email },
+      });
+
+      if (existingUser) {
+        throw new HttpException('Email already exists', HttpStatus.CONFLICT);
+      }
+
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(registerDto.password, 10);
+
+      const createdUser = await this.prismaService.user.create({
+        data: {
+          name: registerDto.name,
+          email: registerDto.email,
+          password: hashedPassword,
+        },
+      });
+
+      const payload = {
+        email: createdUser.email,
+        sub: createdUser.id,
+        name: createdUser.name,
+      };
+      const token = this.jwtService.sign(payload);
+
+      return {
+        access_token: token,
+        user: {
+          id: createdUser.id,
+          name: createdUser.name,
+          email: createdUser.email,
+        },
+      };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Unexpected Error during registration:', error);
+      throw new HttpException(
+        'Internal server error during registration',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
   }
 }
