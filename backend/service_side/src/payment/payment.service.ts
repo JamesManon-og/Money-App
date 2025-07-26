@@ -1,4 +1,9 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -13,30 +18,25 @@ export class PaymentService {
         data: createPaymentDto,
       });
       return createdPayment;
-    } catch (error: any) {
+    } catch (error) {
       if (error.code === 'P2003') {
         throw new HttpException(
           'Invalid participant ID',
           HttpStatus.BAD_REQUEST,
         );
       }
-      console.error('Error creating payment:', error);
-      throw new HttpException(
-        'Failed to create payment',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to create payment', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 
   async findAll() {
     try {
       return await this.prisma.payment.findMany();
-    } catch (error) {
-      console.error('Error fetching payments:', error);
-      throw new HttpException(
-        'Failed to fetch payments',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    } catch {
+      throw new InternalServerErrorException('Failed to fetch payments');
     }
   }
 
@@ -53,54 +53,44 @@ export class PaymentService {
       if (error instanceof HttpException) {
         throw error;
       }
-      console.error('Error fetching payment:', error);
-      throw new HttpException(
-        'Failed to fetch payment',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to fetch payment');
     }
   }
 
   async update(id: string, updatePaymentDto: UpdatePaymentDto) {
+    await this.findOne(id);
     try {
       const updatedPayment = await this.prisma.payment.update({
         where: { id },
         data: updatePaymentDto,
       });
       return updatedPayment;
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
-      }
+    } catch (error) {
       if (error.code === 'P2003') {
         throw new HttpException(
           'Invalid participant ID',
           HttpStatus.BAD_REQUEST,
         );
       }
-      console.error('Error updating payment:', error);
-      throw new HttpException(
-        'Failed to update payment',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to update payment', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 
   async remove(id: string) {
+    await this.findOne(id);
     try {
       const deletedPayment = await this.prisma.payment.delete({
         where: { id },
       });
       return deletedPayment;
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new HttpException('Payment not found', HttpStatus.NOT_FOUND);
-      }
-      console.error('Error deleting payment:', error);
-      throw new HttpException(
-        'Failed to delete payment',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to delete payment', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 }

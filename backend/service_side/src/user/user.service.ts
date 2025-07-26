@@ -1,7 +1,13 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
+import * as bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UserService {
@@ -9,31 +15,37 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     try {
+      // Hash the password before saving
+      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
       const createdUser = await this.prisma.user.create({
-        data: createUserDto,
+        data: {
+          name: createUserDto.name,
+          email: createUserDto.email,
+          password: hashedPassword,
+        },
       });
-      return createdUser;
-    } catch (error: any) {
+
+      // Remove password from response
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { password: _, ...userWithoutPassword } = createdUser;
+      return userWithoutPassword;
+    } catch (error) {
       if (error.code === 'P2002') {
         throw new HttpException('Email already exists', HttpStatus.CONFLICT);
       }
-      console.error('Error creating user:', error);
-      throw new HttpException(
-        'Failed to create user',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to create user', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 
   async findAll() {
     try {
       return await this.prisma.user.findMany();
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      throw new HttpException(
-        'Failed to fetch users',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    } catch {
+      throw new InternalServerErrorException('Failed to fetch users');
     }
   }
 
@@ -50,51 +62,52 @@ export class UserService {
       if (error instanceof HttpException) {
         throw error;
       }
-      console.error('Error fetching user:', error);
-      throw new HttpException(
-        'Failed to fetch user',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to fetch user');
+    }
+  }
+
+  async findByEmail(email: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { email },
+      });
+      return user; // Return null if not found (for auth purposes)
+    } catch {
+      throw new InternalServerErrorException('Failed to fetch user');
     }
   }
 
   async update(id: string, updateUserDto: UpdateUserDto) {
+    await this.findOne(id);
     try {
       const updatedUser = await this.prisma.user.update({
         where: { id },
         data: updateUserDto,
       });
       return updatedUser;
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-      }
+    } catch (error) {
       if (error.code === 'P2002') {
         throw new HttpException('Email already exists', HttpStatus.CONFLICT);
       }
-      console.error('Error updating user:', error);
-      throw new HttpException(
-        'Failed to update user',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to update user', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 
   async remove(id: string) {
+    await this.findOne(id);
     try {
       const deletedUser = await this.prisma.user.delete({
         where: { id },
       });
       return deletedUser;
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
-      }
-      console.error('Error deleting user:', error);
-      throw new HttpException(
-        'Failed to delete user',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to delete user', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 }

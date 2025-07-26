@@ -1,4 +1,9 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateParticipantDto } from './dto/create-participant.dto';
 import { UpdateParticipantDto } from './dto/update-participant.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -13,30 +18,25 @@ export class ParticipantService {
         data: createParticipantDto,
       });
       return createdParticipant;
-    } catch (error: any) {
+    } catch (error) {
       if (error.code === 'P2003') {
         throw new HttpException(
           'Invalid expense or user ID',
           HttpStatus.BAD_REQUEST,
         );
       }
-      console.error('Error creating participant:', error);
-      throw new HttpException(
-        'Failed to create participant',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to create participant', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 
   async findAll() {
     try {
       return await this.prisma.participant.findMany();
-    } catch (error) {
-      console.error('Error fetching participants:', error);
-      throw new HttpException(
-        'Failed to fetch participants',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    } catch {
+      throw new InternalServerErrorException('Failed to fetch participants');
     }
   }
 
@@ -53,54 +53,44 @@ export class ParticipantService {
       if (error instanceof HttpException) {
         throw error;
       }
-      console.error('Error fetching participant:', error);
-      throw new HttpException(
-        'Failed to fetch participant',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to fetch participant');
     }
   }
 
   async update(id: string, updateParticipantDto: UpdateParticipantDto) {
+    await this.findOne(id);
     try {
       const updatedParticipant = await this.prisma.participant.update({
         where: { id },
         data: updateParticipantDto,
       });
       return updatedParticipant;
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new HttpException('Participant not found', HttpStatus.NOT_FOUND);
-      }
+    } catch (error) {
       if (error.code === 'P2003') {
         throw new HttpException(
           'Invalid expense or user ID',
           HttpStatus.BAD_REQUEST,
         );
       }
-      console.error('Error updating participant:', error);
-      throw new HttpException(
-        'Failed to update participant',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to update participant', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 
   async remove(id: string) {
+    await this.findOne(id);
     try {
       const deletedParticipant = await this.prisma.participant.delete({
         where: { id },
       });
       return deletedParticipant;
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new HttpException('Participant not found', HttpStatus.NOT_FOUND);
-      }
-      console.error('Error deleting participant:', error);
-      throw new HttpException(
-        'Failed to delete participant',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to delete participant', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 }

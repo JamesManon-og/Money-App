@@ -1,4 +1,9 @@
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -14,23 +19,18 @@ export class ExpenseService {
       });
       return createdExpense;
     } catch (error) {
-      console.error('Error creating expense:', error);
-      throw new HttpException(
-        'Failed to create expense',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to create expense', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 
   async findAll() {
     try {
       return await this.prisma.expense.findMany();
-    } catch (error) {
-      console.error('Error fetching expenses:', error);
-      throw new HttpException(
-        'Failed to fetch expenses',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    } catch {
+      throw new InternalServerErrorException('Failed to fetch expenses');
     }
   }
 
@@ -47,48 +47,38 @@ export class ExpenseService {
       if (error instanceof HttpException) {
         throw error;
       }
-      console.error('Error fetching expense:', error);
-      throw new HttpException(
-        'Failed to fetch expense',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+      throw new InternalServerErrorException('Failed to fetch expense');
     }
   }
 
   async update(id: string, updateExpenseDto: UpdateExpenseDto) {
+    await this.findOne(id);
     try {
       const updatedExpense = await this.prisma.expense.update({
         where: { id },
         data: updateExpenseDto,
       });
       return updatedExpense;
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
-      }
-      console.error('Error updating expense:', error);
-      throw new HttpException(
-        'Failed to update expense',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to update expense', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 
   async remove(id: string) {
+    await this.findOne(id);
     try {
       const deletedExpense = await this.prisma.expense.delete({
         where: { id },
       });
       return deletedExpense;
-    } catch (error: any) {
-      if (error.code === 'P2025') {
-        throw new HttpException('Expense not found', HttpStatus.NOT_FOUND);
-      }
-      console.error('Error deleting expense:', error);
-      throw new HttpException(
-        'Failed to delete expense',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to delete expense', {
+        cause: error,
+        description: 'An unexpected error occurred',
+      });
     }
   }
 }
