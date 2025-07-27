@@ -13,8 +13,8 @@ import {
 } from '@nestjs/common';
 
 import { AuthService } from './auth.service';
-import { AuthGuard } from './guards/jwt-auth.guard';
-import { Public } from './decorators/public.decorator';
+import { AuthGuard } from './auth.guard';
+import { Public } from './public.decorator';
 import { LoginDto } from './dto/login.dto';
 
 @Controller('auth')
