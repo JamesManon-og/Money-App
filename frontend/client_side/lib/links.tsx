@@ -1,5 +1,5 @@
 export enum Links {
-  home = "/dashboard",
+  dashboard = "/dashboard",
   //   projects = "/projects",
   //   members = "/members",
 }
