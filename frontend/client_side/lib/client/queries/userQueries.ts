@@ -1,0 +1,18 @@
+"use client";
+import { useQuery } from "@tanstack/react-query";
+
+import { getAllUsers, getUserById } from "../services/userService";
+
+export const useGetAllUsers = () => {
+  return useQuery({
+    queryKey: ["users"],
+    queryFn: () => getAllUsers(),
+  });
+};
+
+export const useGetUserById = (id: string) => {
+  return useQuery({
+    queryKey: ["users", id],
+    queryFn: () => getUserById(id),
+  });
+};
