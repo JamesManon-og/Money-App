@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL! || "http://localhost:8080";
-const PROFILE_ENDPOINT = `/api/auth/profile`;
+const PROFILE_ENDPOINT = `/auth/profile`;
 
 export async function middleware(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -44,6 +44,7 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico, sitemap.xml, robots.txt (metadata files)
      * - login (public route)
+     * - signup (public route)
      */
     "/((?!api|_next/static|_next/image|favicon.ico|sitemap.xml|robots.txt|login).*)",
   ],

@@ -2,37 +2,58 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+import { useCreateUser } from "@/lib/client/mutations/userMutation";
+import { SignupDTO, signupSchema } from "@/lib/client/zod-schemas/signupSchema";
 
 interface SignUpPageProps {
   onBack?: () => void;
 }
 
 export function SignUpPage({ onBack }: SignUpPageProps) {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
+  const router = useRouter();
+
+  const { mutate: createUser } = useCreateUser({
+    onSuccess: () => {
+      toast.success("Account created successfully!");
+      form.reset();
+      // Redirect to login or dashboard
+      router.push("/login");
+    },
+    onError: (error) => {
+      toast.error(`Failed to create account: ${error.message}`);
+    },
   });
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsLoading(false);
-  };
+  const form = useForm<SignupDTO>({
+    resolver: zodResolver(signupSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+    },
+  });
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+  const onSubmit = (data: SignupDTO) => {
+    createUser({ userData: data });
   };
 
   const handleBack = () => {
-    setFormData({ name: "", email: "", password: "" });
+    form.reset();
     if (onBack) {
       onBack();
     }
@@ -59,78 +80,89 @@ export function SignUpPage({ onBack }: SignUpPageProps) {
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div>
-              <Label
-                htmlFor="name"
-                className="text-sm font-medium text-gray-700"
-              >
-                Full Name
-              </Label>
-              <Input
-                id="name"
-                type="text"
-                placeholder="Enter your full name"
-                className="mt-1 h-12 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
-                value={formData.name}
-                onChange={(e) => handleInputChange("name", e.target.value)}
-                required
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <div className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Full Name
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="text"
+                        placeholder="Enter your full name"
+                        className="mt-1 h-12 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Email Address
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="email"
+                        placeholder="Enter your email"
+                        className="mt-1 h-12 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Password
+                    </FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="Create a password"
+                        className="mt-1 h-12 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
             </div>
 
-            <div>
-              <Label
-                htmlFor="email"
-                className="text-sm font-medium text-gray-700"
-              >
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="Enter your email"
-                className="mt-1 h-12 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
-                value={formData.email}
-                onChange={(e) => handleInputChange("email", e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <Label
-                htmlFor="password"
-                className="text-sm font-medium text-gray-700"
-              >
-                Password
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="Create a password"
-                className="mt-1 h-12 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500"
-                value={formData.password}
-                onChange={(e) => handleInputChange("password", e.target.value)}
-                required
-              />
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-lg"
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                Creating Account...
-              </div>
-            ) : (
-              "Create Account"
-            )}
-          </Button>
-        </form>
+            <Button
+              type="submit"
+              className="w-full h-12 bg-emerald-600 hover:bg-emerald-700 text-white font-medium text-lg"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? (
+                <div className="flex items-center">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                  Creating Account...
+                </div>
+              ) : (
+                "Create Account"
+              )}
+            </Button>
+          </form>
+        </Form>
 
         <div className="pt-4">
           <div className="flex justify-center space-x-6 text-sm text-gray-500">

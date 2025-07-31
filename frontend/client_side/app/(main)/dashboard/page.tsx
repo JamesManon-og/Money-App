@@ -38,7 +38,7 @@ function AppHeader({
   return (
     <div className="bg-emerald-600 text-white p-4 pb-6">
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-xl font-bold">Splitwise</h1>
+        <h1 className="text-xl font-bold">Money App</h1>
         <Button
           variant="ghost"
           size="icon"
