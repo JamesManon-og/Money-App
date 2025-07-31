@@ -8,7 +8,7 @@ async function main() {
       id: '3137c81d-bb8b-4a87-bd85-4fd80adafd69',
       name: 'Sid',
       email: 'siddigamon@gmail.com',
-      password: '$2a$10$N9qo8uLOickgx2ZMRZoMye.fDdhr.l3BQNQ0Z8k7vdQF7iXl4XY2O',
+      password: '$2b$10$7mz2v7ZhFCauy8NQwzrfb.7l6lWYlxyi9ky.HkYiMQ3aBKp9Ui.Sm',
     },
   });
 
@@ -17,7 +17,7 @@ async function main() {
       id: '9732538a-3fa9-44d5-a09d-0317495914b2',
       name: 'Miggy',
       email: 'miggyalino@gmail.com',
-      password: '$2a$10$N9qo8uLOickgx2ZMRZoMye.fDdhr.l3BQNQ0Z8k7vdQF7iXl4XY2O',
+      password: '$2b$10$7mz2v7ZhFCauy8NQwzrfb.7l6lWYlxyi9ky.HkYiMQ3aBKp9Ui.Sm',
     },
   });
 
@@ -26,7 +26,7 @@ async function main() {
       id: '597f3baf-47d0-4984-bb0f-4123ffc18d71',
       name: 'James',
       email: 'jamesmanonog@gmail.com',
-      password: '$2a$10$N9qo8uLOickgx2ZMRZoMye.fDdhr.l3BQNQ0Z8k7vdQF7iXl4XY2O',
+      password: '$2b$10$7mz2v7ZhFCauy8NQwzrfb.7l6lWYlxyi9ky.HkYiMQ3aBKp9Ui.Sm',
     },
   });
 
@@ -35,7 +35,7 @@ async function main() {
       id: 'a3458cb6-98f7-44e2-8a1a-a02a02e072f2',
       name: 'Job',
       email: 'jobmegrino@gmail.com',
-      password: '$2a$10$N9qo8uLOickgx2ZMRZoMye.fDdhr.l3BQNQ0Z8k7vdQF7iXl4XY2O',
+      password: '$2b$10$7mz2v7ZhFCauy8NQwzrfb.7l6lWYlxyi9ky.HkYiMQ3aBKp9Ui.Sm',
     },
   });
 
@@ -44,7 +44,7 @@ async function main() {
       id: '62a5225e-90c1-4775-9631-e069243f3979',
       name: 'Ced',
       email: 'cedsarillo@gmail.com',
-      password: '$2a$10$N9qo8uLOickgx2ZMRZoMye.fDdhr.l3BQNQ0Z8k7vdQF7iXl4XY2O',
+      password: '$2b$10$7mz2v7ZhFCauy8NQwzrfb.7l6lWYlxyi9ky.HkYiMQ3aBKp9Ui.Sm',
     },
   });
 
@@ -53,7 +53,7 @@ async function main() {
       id: 'db597c7b-cb1b-4664-a754-8d0f244fb99e',
       name: 'Glenn',
       email: 'glennfabul@gmail.com',
-      password: '$2a$10$N9qo8uLOickgx2ZMRZoMye.fDdhr.l3BQNQ0Z8k7vdQF7iXl4XY2O',
+      password: '$2b$10$7mz2v7ZhFCauy8NQwzrfb.7l6lWYlxyi9ky.HkYiMQ3aBKp9Ui.Sm',
     },
   });
 
