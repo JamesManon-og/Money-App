@@ -27,7 +27,8 @@ export function LoginPage({ onBack }: LoginPageProps) {
   const router = useRouter();
 
   const { mutate: loginUser } = useLoginUser({
-    onSuccess: () => {
+    onSuccess: (data) => {
+      localStorage.setItem("token", data.access_token);
       toast.success("Login Successful");
       router.push("/");
     },
