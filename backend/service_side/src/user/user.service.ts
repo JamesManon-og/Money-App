@@ -66,6 +66,26 @@ export class UserService {
     }
   }
 
+  async findCurrentUser(id: string) {
+    try {
+      const user = await this.prisma.user.findUnique({
+        where: { id },
+        select: {
+          name: true,
+        },
+      });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+      return user.name;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Failed to fetch current user');
+    }
+  }
+
   async findByEmail(email: string) {
     try {
       const user = await this.prisma.user.findUnique({

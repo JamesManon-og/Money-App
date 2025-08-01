@@ -2,6 +2,7 @@ import { BASE_URL } from "../config";
 import { CreateUserData, UpdateUserData, User } from "../../types/model";
 
 const USER_URI = "/user";
+const CURRENT_USER_URI = "/user/current-user";
 
 export const getAllUsers = async (): Promise<User[]> => {
   const data = await fetch(`${BASE_URL}${USER_URI}`, {
@@ -31,6 +32,23 @@ export const getUserById = async (id: string): Promise<User> => {
 
   if (!data.ok) {
     throw new Error(`Failed to fetch user: ${data.statusText}`);
+  }
+
+  const response = await data.json();
+  return response;
+};
+
+export const getCurrentUser = async (): Promise<User> => {
+  const data = await fetch(`${BASE_URL}${CURRENT_USER_URI}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+
+  if (!data.ok) {
+    throw new Error(`Failed to fetch current user: ${data.statusText}`);
   }
 
   const response = await data.json();
