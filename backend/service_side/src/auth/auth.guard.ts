@@ -21,12 +21,13 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+
     if (isPublic) {
       return true;
     }
+
     const request = context.switchToHttp().getRequest();
-    const token =
-      this.extractTokenFromHeader(request) ?? request.cookies?.token;
+    const token = this.extractToken(request);
 
     if (!token) {
       throw new UnauthorizedException();
@@ -34,18 +35,38 @@ export class AuthGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync(token, {
-        secret: process.env.JWT_SECRET,
+        secret: process.env.AUTH_SECRET,
       });
       request['user'] = payload;
-    } catch (error) {
-      console.log(error);
+    } catch {
       throw new UnauthorizedException();
     }
     return true;
   }
 
+  private extractToken(request: Request): string | undefined {
+    const tokenFromHeader = this.extractTokenFromHeader(request);
+    const tokenFromCookie = this.extractTokenFromCookie(request);
+
+    return tokenFromHeader || tokenFromCookie;
+  }
+
   private extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
+  }
+
+  private extractTokenFromCookie(request: Request): string | undefined {
+    const cookieHeader = request.headers.cookie;
+    if (!cookieHeader) return undefined;
+
+    const cookies = cookieHeader.split(';').map((cookie) => cookie.trim());
+    for (const cookie of cookies) {
+      const [key, value] = cookie.split('=');
+      if (key === 'token') {
+        return value;
+      }
+    }
+    return undefined;
   }
 }
