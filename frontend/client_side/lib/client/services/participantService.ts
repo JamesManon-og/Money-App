@@ -6,6 +6,9 @@ import {
 } from "../../types/model";
 
 const PARTICIPANT_URI = "/participant";
+const USER_URI = "/user";
+const EXPENSE_BY_URI = "/expense";
+const WHO_OWES_ME_URI = "/who-owes-me";
 
 export const createParticipant = async (
   participantData: CreateParticipantData
@@ -55,6 +58,73 @@ export const getParticipantById = async (id: string): Promise<Participant> => {
 
   if (!data.ok) {
     throw new Error(`Failed to fetch participant: ${data.statusText}`);
+  }
+
+  const response = await data.json();
+  return response;
+};
+
+export const findWhoOwesMe = async (): Promise<Participant[]> => {
+  const data = await fetch(`${BASE_URL}${PARTICIPANT_URI}${WHO_OWES_ME_URI}`, {
+    method: "GET",
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!data.ok) {
+    throw new Error(
+      `Failed to fetch participants who owe me: ${data.statusText}`
+    );
+  }
+
+  const response = await data.json();
+  return response;
+};
+
+export const getParticipantsByExpenseId = async (
+  expenseId: string
+): Promise<Participant[]> => {
+  const data = await fetch(
+    `${BASE_URL}${PARTICIPANT_URI}${EXPENSE_BY_URI}/${expenseId}`,
+    {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!data.ok) {
+    throw new Error(
+      `Failed to fetch participants by expense ID: ${data.statusText}`
+    );
+  }
+
+  const response = await data.json();
+  return response;
+};
+
+export const getParticipantsByUserId = async (
+  userId: string
+): Promise<Participant[]> => {
+  const data = await fetch(
+    `${BASE_URL}${PARTICIPANT_URI}${USER_URI}/${userId}`,
+    {
+      method: "GET",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+
+  if (!data.ok) {
+    throw new Error(
+      `Failed to fetch participants by user ID: ${data.statusText}`
+    );
   }
 
   const response = await data.json();

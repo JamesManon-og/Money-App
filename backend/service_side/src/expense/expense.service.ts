@@ -28,7 +28,16 @@ export class ExpenseService {
 
   async findAll() {
     try {
-      return await this.prisma.expense.findMany();
+      return await this.prisma.expense.findMany({
+        include: {
+          paidBy: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+      });
     } catch {
       throw new InternalServerErrorException('Failed to fetch expenses');
     }

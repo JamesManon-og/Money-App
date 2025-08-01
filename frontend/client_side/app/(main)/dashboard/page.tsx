@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { AppHeader } from "@/components/header-title";
 import { TabNavigation } from "@/components/tab-navigation";
 import { DashboardContent } from "@/components/dashboard-content";
@@ -16,7 +16,7 @@ import { useGetAllParticipants } from "@/lib/client/queries/participantQueries";
 import { useCreateParticipant } from "@/lib/client/mutations/participantMutation";
 import { useGetAllPayments } from "@/lib/client/queries/paymentQueries";
 import { useCreatePayment } from "@/lib/client/mutations/paymentMutation";
-import { useGetUserById } from "@/lib/client/queries/userQueries";
+import { useCurrentUser } from "@/lib/client/queries/userQueries";
 
 type Expense = {
   id: string;
@@ -41,27 +41,8 @@ export default function SplitWiseApp() {
   const [showAddExpense, setShowAddExpense] = useState(false);
   const [showSettleUp, setShowSettleUp] = useState(false);
   const [selectedBalance, setSelectedBalance] = useState<Balance | null>(null);
-  const [userId, setUserId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      try {
-        const payload = JSON.parse(atob(token.split(".")[1]));
-        const userIdFromToken = payload?.sub;
-        setUserId(userIdFromToken);
-        console.log("Decoded payload:", payload);
-        console.log("User ID:", userIdFromToken);
-      } catch (error) {
-        console.error("Error decoding token:", error);
-      }
-    } else {
-      console.log("No token found in localStorage.");
-    }
-  }, []);
-
-  const { data: user } = useGetUserById(userId || "");
-  console.log("User data:", user);
+  const { data: user } = useCurrentUser();
 
   const { data: expenses } = useGetAllExpenses();
   const { mutate: createExpense } = useCreateExpense({
@@ -95,10 +76,6 @@ export default function SplitWiseApp() {
     },
   });
 
-  console.log("Expenses data:", expenses);
-  console.log("Participants data:", participants);
-  console.log("Payments data:", payments);
-
   // Mock balances data (you can replace this with real API call later)
   const balances: Balance[] = [
     { person: "Alice", amount: 22.75, type: "owed" },
@@ -120,7 +97,7 @@ export default function SplitWiseApp() {
       expenseData: {
         name: expense.description,
         totalAmount: expense.amount,
-        paidById: userId || "",
+        paidById: expense.paidBy,
         date: expense.date,
         notes: expense.group,
       },
