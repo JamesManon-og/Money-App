@@ -6,6 +6,7 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
 } from '@nestjs/common';
 import { ParticipantService } from './participant.service';
 import { CreateParticipantDto } from './dto/create-participant.dto';
@@ -23,6 +24,21 @@ export class ParticipantController {
   @Get()
   findAll() {
     return this.participantService.findAll();
+  }
+
+  @Get('/expense/:expenseId')
+  findByExpenseId(@Param('expenseId') expenseId: string) {
+    return this.participantService.findByExpenseId(expenseId);
+  }
+
+  @Get('/who-owes-me')
+  findWhoOwesMe(@Req() req) {
+    return this.participantService.findAllWhoOweMe(req.user.id);
+  }
+
+  @Get('/user/:userId')
+  findByUserId(@Param('userId') userId: string) {
+    return this.participantService.findByUserId(userId);
   }
 
   @Get(':id')

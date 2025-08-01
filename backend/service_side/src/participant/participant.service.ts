@@ -40,6 +40,110 @@ export class ParticipantService {
     }
   }
 
+  async findByExpenseId(expenseId: string) {
+    try {
+      return await this.prisma.participant.findMany({
+        where: { expenseId },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Failed to fetch participants by expense ID',
+        {
+          cause: error,
+          description: 'An unexpected error occurred',
+        },
+      );
+    }
+  }
+
+  async findByUserId(userId: string) {
+    try {
+      return await this.prisma.participant.findMany({
+        where: {
+          userId,
+          isSettled: false,
+        },
+        include: {
+          expense: {
+            select: {
+              id: true,
+              name: true,
+              totalAmount: true,
+              date: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Failed to fetch participants by user ID',
+        {
+          cause: error,
+          description: 'An unexpected error occurred',
+        },
+      );
+    }
+  }
+
+  async findAllWhoOweMe(currentUserId: string) {
+    try {
+      return await this.prisma.participant.findMany({
+        where: {
+          isSettled: false,
+          expense: {
+            paidById: currentUserId,
+          },
+          userId: {
+            not: currentUserId,
+          },
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
+          expense: {
+            select: {
+              id: true,
+              name: true,
+              totalAmount: true,
+              date: true,
+            },
+          },
+        },
+      });
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      throw new InternalServerErrorException(
+        'Failed to fetch people who owe you money',
+        {
+          cause: error,
+          description: 'An unexpected error occurred',
+        },
+      );
+    }
+  }
+
   async findOne(id: string) {
     try {
       const participant = await this.prisma.participant.findUnique({
