@@ -12,7 +12,12 @@ import { SettleUpModal } from "@/components/settle-up-modal";
 import { useGetAllExpenses } from "@/lib/client/queries/expenseQueries";
 import { useCreateExpense } from "@/lib/client/mutations/expenseMutation";
 import { toast } from "sonner";
-import { useGetAllParticipants } from "@/lib/client/queries/participantQueries";
+import {
+  useGetAllParticipants,
+  useGetParticipantsByExpenseId,
+  useGetParticipantsByUserId,
+  useGetWhoOwesMe,
+} from "@/lib/client/queries/participantQueries";
 import { useCreateParticipant } from "@/lib/client/mutations/participantMutation";
 import { useGetAllPayments } from "@/lib/client/queries/paymentQueries";
 import { useCreatePayment } from "@/lib/client/mutations/paymentMutation";
@@ -43,6 +48,7 @@ export default function SplitWiseApp() {
   const [selectedBalance, setSelectedBalance] = useState<Balance | null>(null);
 
   const { data: user } = useCurrentUser();
+  console.log("HEREEEEEE", user);
 
   const { data: expenses } = useGetAllExpenses();
   const { mutate: createExpense } = useCreateExpense({
@@ -75,6 +81,17 @@ export default function SplitWiseApp() {
       toast.error(`Failed to record payment: ${error.message}`);
     },
   });
+
+  const { data: participantsByExpense } =
+    useGetParticipantsByExpenseId(expenses);
+  const { data: participantsByUser } = useGetParticipantsByUserId(
+    user?.id || ""
+  );
+  const { data: currentUser } = useGetWhoOwesMe();
+
+  console.log("Current user:", currentUser);
+  console.log("Participants by expense:", participantsByExpense);
+  console.log("Participants by user:", participantsByUser);
 
   // Mock balances data (you can replace this with real API call later)
   const balances: Balance[] = [
