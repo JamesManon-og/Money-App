@@ -15,7 +15,6 @@ export class UserService {
 
   async create(createUserDto: CreateUserDto) {
     try {
-      // Hash the password before saving
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
 
       const createdUser = await this.prisma.user.create({
@@ -25,9 +24,6 @@ export class UserService {
           password: hashedPassword,
         },
       });
-
-      // Remove password from response
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { password: _, ...userWithoutPassword } = createdUser;
       return userWithoutPassword;
     } catch (error) {
@@ -91,7 +87,7 @@ export class UserService {
       const user = await this.prisma.user.findUnique({
         where: { email },
       });
-      return user; // Return null if not found (for auth purposes)
+      return user;
     } catch {
       throw new InternalServerErrorException('Failed to fetch user');
     }

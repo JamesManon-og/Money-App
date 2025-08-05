@@ -23,9 +23,10 @@ export class UserController {
     return this.userService.create(createUserDto);
   }
 
-  @Get('/current-user')
+  @Get('/currentuser')
   getCurrentUser(@Req() req) {
-    return this.userService.findCurrentUser(req.user.id);
+    const userId = req.user.sub;
+    return this.userService.findCurrentUser(userId);
   }
 
   @Get()
