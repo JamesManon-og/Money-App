@@ -10,45 +10,71 @@ datasource db {
 }
 
 model User {
-  id           String          @id @default(uuid())
-  name         String
-  email        String          @unique
-  password     String
-  expensesPaid Expense[]       @relation("PaidExpenses")
-  participants Participant[]
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  id              String            @id @default(uuid())
+  name            String
+  email           String            @unique
+  password        String
+  groupMembers    GroupMember[]     
+  paidExpenses    Expense[]         @relation("PaidExpenses") 
+  participants    Participant[]   
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+}
+
+model Group {
+  id          String        @id @default(uuid())
+  name        String        
+  description String?       
+  members     GroupMember[] 
+  expenses    Expense[]     
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model GroupMember {
+  id        String   @id @default(uuid())
+  group     Group    @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  groupId   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  @@unique([groupId, userId]) 
 }
 
 model Expense {
-  id             String          @id @default(uuid())
-  name           String
-  totalAmount    Float
-  paidBy         User            @relation("PaidExpenses", fields: [paidById], references: [id])
-  paidById       String
-  date           DateTime
-  notes          String?
-  participants   Participant[]
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id           String        @id @default(uuid())
+  name         String        
+  totalAmount  Float
+  group        Group         @relation(fields: [groupId], references: [id])
+  groupId      String       
+  paidBy       User          @relation("PaidExpenses", fields: [paidById], references: [id])
+  paidById     String       
+  date         DateTime
+  notes        String?
+  participants Participant[] 
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 }
 
 model Participant {
-  id         String   @id @default(uuid())
-  expense    Expense  @relation(fields: [expenseId], references: [id])
-  expenseId  String
-  user       User     @relation(fields: [userId], references: [id])
-  userId     String
+  id          String    @id @default(uuid())
+  expense     Expense   @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  expenseId   String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId      String
   shareAmount Float
-  isSettled  Boolean  @default(false)
-  settledAt  DateTime?
-  payments   Payment[]
+  isSettled   Boolean   @default(false)
+  settledAt   DateTime?
+  payments    Payment[]
+
+  @@unique([expenseId, userId]) 
 }
 
 model Payment {
-  id                String       @id @default(uuid())
-  participant       Participant  @relation(fields: [participantId], references: [id])
-  participantId     String
-  amountPaid        Float
-  paidAt            DateTime     @default(now())
+  id            String      @id @default(uuid())
+  participant   Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+  participantId String
+  amountPaid    Float
+  paidAt        DateTime    @default(now())
 }
