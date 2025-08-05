@@ -20,6 +20,10 @@ export class CreateExpenseDto {
 
   @IsNotEmpty()
   @IsUUID()
+  groupId: string;
+
+  @IsNotEmpty()
+  @IsUUID()
   paidById: string;
 
   @IsNotEmpty()
