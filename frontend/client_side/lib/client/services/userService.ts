@@ -2,7 +2,7 @@ import { BASE_URL } from "../config";
 import { CreateUserData, UpdateUserData, User } from "../../types/model";
 
 const USER_URI = "/user";
-const CURRENT_USER_URI = "/user/current-user";
+const CURRENT_USER_URI = "/user/currentuser";
 
 export const getAllUsers = async (): Promise<User[]> => {
   const data = await fetch(`${BASE_URL}${USER_URI}`, {

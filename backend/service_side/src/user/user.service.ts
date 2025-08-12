@@ -67,13 +67,17 @@ export class UserService {
       const user = await this.prisma.user.findUnique({
         where: { id },
         select: {
+          id: true,
           name: true,
+          email: true,
+          createdAt: true,
+          updatedAt: true,
         },
       });
       if (!user) {
         throw new HttpException('User not found', HttpStatus.NOT_FOUND);
       }
-      return user.name;
+      return user;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;

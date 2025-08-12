@@ -108,6 +108,17 @@ export type Participant = {
   shareAmount: number;
   isSettled: boolean;
   settledAt?: string;
+  expense?: {
+    id: string;
+    name: string;
+    totalAmount: number;
+    date: string;
+    paidById: string;
+    paidBy: {
+      id: string;
+      name: string;
+    };
+  };
 };
 
 export type Payment = {

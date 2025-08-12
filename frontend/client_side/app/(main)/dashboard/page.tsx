@@ -9,7 +9,10 @@ import { AddExpenseModal } from "@/components/add-expense-modal";
 import { GroupsView } from "@/components/groups-view";
 import { ActivityView } from "@/components/activity-view";
 import { SettleUpModal } from "@/components/settle-up-modal";
-import { useGetAllExpenses } from "@/lib/client/queries/expenseQueries";
+import {
+  useGetAllExpenses,
+  useGetExpenseById,
+} from "@/lib/client/queries/expenseQueries";
 import { useCreateExpense } from "@/lib/client/mutations/expenseMutation";
 import { toast } from "sonner";
 import {
@@ -59,6 +62,9 @@ export default function SplitWiseApp() {
   console.log("Group data:", group);
 
   const { data: expenses } = useGetAllExpenses();
+  const { data: expenseById } = useGetExpenseById(user?.id || "");
+  console.log("Expenses:", expenses);
+  console.log("Expense by ID:", expenseById);
   const { mutate: createExpense } = useCreateExpense({
     onSuccess: () => {
       toast.success("Expense added successfully!");
@@ -151,7 +157,7 @@ export default function SplitWiseApp() {
         {activeTab === "dashboard" && (
           <DashboardContent
             balances={balances}
-            expenses={expenses}
+            participants={participantsByUser || []}
             onSettleUp={handleSettleUp}
           />
         )}

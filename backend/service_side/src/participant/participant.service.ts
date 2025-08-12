@@ -82,6 +82,13 @@ export class ParticipantService {
               name: true,
               totalAmount: true,
               date: true,
+              paidById: true,
+              paidBy: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
             },
           },
         },

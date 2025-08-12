@@ -2,20 +2,7 @@ import { Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-
-type Expense = {
-  id: string;
-  name: string;
-  notes: string;
-  totalAmount: number;
-  paidById: string;
-  paidBy: {
-    id: string;
-    name: string;
-  };
-  splitBetween: string[];
-  date: string;
-};
+import { Participant } from "@/lib/types/model";
 
 type Balance = {
   person: string;
@@ -25,18 +12,15 @@ type Balance = {
 
 interface DashboardContentProps {
   balances: Balance[];
-  expenses: Expense[];
+  participants: Participant[];
   onSettleUp: (person: string) => void;
 }
 
 export function DashboardContent({
   balances,
-  expenses,
+  participants,
   onSettleUp,
 }: DashboardContentProps) {
-  // const { data: paidBy } = useGetUserById(expenses[0].paidById);
-  // console.log("Paid by user:", paidBy);
-
   return (
     <div className="space-y-4">
       <Card>
@@ -89,10 +73,10 @@ export function DashboardContent({
           <CardTitle className="text-lg">Recent expenses</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          {expenses && expenses.length > 0 ? (
-            expenses.map((expense) => (
+          {participants && participants.length > 0 ? (
+            participants.map((participant) => (
               <div
-                key={expense.id}
+                key={participant.id}
                 className="flex items-center justify-between"
               >
                 <div className="flex items-center gap-3">
@@ -101,17 +85,23 @@ export function DashboardContent({
                   </div>
                   <div>
                     <div className="font-medium">
-                      {expense.name || "No description"}
+                      {participant.expense?.name || "No description"}
                     </div>
-                    <div className="text-sm text-gray-500">{expense.date}</div>
+                    <div className="text-sm text-gray-500">
+                      {participant.expense?.date
+                        ? new Date(
+                            participant.expense.date
+                          ).toLocaleDateString()
+                        : "No date"}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="font-semibold">
-                    ₱{expense.totalAmount.toFixed(2)}
+                    ₱{participant.shareAmount.toFixed(2)}
                   </div>
                   <div className="text-sm text-gray-500">
-                    paid by {expense.paidBy?.name || "Unknown user"}
+                    paid by {participant.expense?.paidBy.name || "Unknown"}
                   </div>
                 </div>
               </div>
