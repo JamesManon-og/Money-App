@@ -1,26 +1,74 @@
 import { Injectable } from '@nestjs/common';
 import { CreateGroupMemberDto } from './dto/create-group-member.dto';
 import { UpdateGroupMemberDto } from './dto/update-group-member.dto';
+import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class GroupMemberService {
-  create(createGroupMemberDto: CreateGroupMemberDto) {
-    return 'This action adds a new groupMember';
+  constructor(private readonly prisma: PrismaService) {}
+  async create(createGroupMemberDto: CreateGroupMemberDto) {
+    try {
+      const existingMember = await this.prisma.groupMember.findUnique({
+        where: {
+          GroupMemberUnique: {
+            userId: createGroupMemberDto.userId,
+            groupId: createGroupMemberDto.groupId,
+          },
+        },
+      });
+
+      if (existingMember) {
+        throw new Error('User is already a member of this group');
+      }
+    } catch (error) {
+      throw new Error('Error creating group member');
+    }
+    return this.prisma.groupMember.create({
+      data: createGroupMemberDto,
+    });
   }
 
-  findAll() {
-    return `This action returns all groupMember`;
+  async findAll() {
+    try {
+      const allMembers = await this.prisma.groupMember.findMany();
+      return allMembers;
+    } catch (error) {
+      throw new Error('Error fetching group members');
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} groupMember`;
+  async findOne(id: string) {
+    try {
+      return await this.prisma.groupMember.findUnique({ where: { id } });
+    } catch (error) {
+      throw new Error('Error fetching group member');
+    }
   }
 
-  update(id: number, updateGroupMemberDto: UpdateGroupMemberDto) {
-    return `This action updates a #${id} groupMember`;
+  async findByUserId(userId: string) {
+    try {
+      return await this.prisma.groupMember.findMany({ where: { userId } });
+    } catch (error) {
+      throw new Error('Error fetching group members by user ID');
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} groupMember`;
+  async update(id: string, updateGroupMemberDto: UpdateGroupMemberDto) {
+    try {
+      return await this.prisma.groupMember.update({
+        where: { id },
+        data: updateGroupMemberDto,
+      });
+    } catch (error) {
+      throw new Error('Error updating group member');
+    }
+  }
+
+  async remove(id: string) {
+    try {
+      return await this.prisma.groupMember.delete({ where: { id } });
+    } catch (error) {
+      throw new Error('Error removing group member');
+    }
   }
 }

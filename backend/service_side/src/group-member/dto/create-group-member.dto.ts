@@ -1,11 +1,12 @@
 import { IsNotEmpty, IsUUID } from 'class-validator';
+import { UUID } from 'crypto';
 
 export class CreateGroupMemberDto {
   @IsNotEmpty()
   @IsUUID()
-  groupId: string;
+  groupId: UUID;
 
   @IsNotEmpty()
   @IsUUID()
-  userId: string;
+  userId: UUID;
 }

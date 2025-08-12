@@ -39,7 +39,7 @@ model GroupMember {
   userId    String
   joinedAt  DateTime @default(now())
 
-  @@unique([groupId, userId]) 
+  @@unique([groupId, userId], name: "GroupMemberUnique") 
 }
 
 model Expense {
