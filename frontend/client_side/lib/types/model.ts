@@ -21,6 +21,26 @@ export type UpdateExpenseData = {
   notes?: string;
 };
 
+export type CreateGroupData = {
+  name: string;
+  description?: string;
+};
+
+export type UpdateGroupData = {
+  name?: string;
+  description?: string;
+};
+
+export type CreateGroupMemberData = {
+  groupId: string;
+  userId: string;
+};
+
+export type UpdateGroupMemberData = {
+  groupId?: string;
+  userId?: string;
+};
+
 export type CreateUserData = {
   name: string;
   email: string;
@@ -95,6 +115,22 @@ export type Payment = {
   participantId: string;
   amountPaid: number;
   paidAt: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type Group = {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type GroupMember = {
+  id: string;
+  groupId: string;
+  userId: string;
   createdAt: string;
   updatedAt: string;
 };

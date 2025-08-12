@@ -22,6 +22,8 @@ import { useCreateParticipant } from "@/lib/client/mutations/participantMutation
 import { useGetAllPayments } from "@/lib/client/queries/paymentQueries";
 import { useCreatePayment } from "@/lib/client/mutations/paymentMutation";
 import { useCurrentUser } from "@/lib/client/queries/userQueries";
+import { useGetAllGroupMembers } from "@/lib/client/queries/groupMemberQueries";
+import { useGetAllGroups } from "@/lib/client/queries/groupQueries";
 
 type Expense = {
   id: string;
@@ -49,6 +51,12 @@ export default function SplitWiseApp() {
 
   const { data: user } = useCurrentUser();
   console.log("HEREEEEEE", user);
+
+  const { data: groupMembers } = useGetAllGroupMembers();
+  console.log("Group members:", groupMembers);
+
+  const { data: group } = useGetAllGroups();
+  console.log("Group data:", group);
 
   const { data: expenses } = useGetAllExpenses();
   const { mutate: createExpense } = useCreateExpense({
